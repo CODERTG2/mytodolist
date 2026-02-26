@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Todo & Calendar</title>
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dark-theme">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-layer-group"></i>
+            <h2>ZenTask</h2>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active" data-view="tasks">
+                <i class="fa-solid fa-list-check"></i> Tasks
+            </a>
+            <a href="#" class="nav-item" data-view="calendar">
+                <i class="fa-regular fa-calendar"></i> Calendar
+            </a>
+        </nav>
+        
+        <div class="categories-section">
+            <div class="section-header">
+                <h3>Categories</h3>
+                <button id="add-category-btn" class="icon-btn"><i class="fa-solid fa-plus"></i></button>
+            </div>
+            <ul id="categories-list" class="categories-list">
+                <!-- Categories will be rendered here -->
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Tasks View -->
+        <section id="tasks-view" class="view-section active">
+            <header class="view-header">
+                <h1>My Tasks</h1>
+                <p class="date-subtitle" id="current-date-display"></p>
+                <div class="action-bar">
+                   <button id="new-task-btn" class="primary-btn">
+                       <i class="fa-solid fa-plus"></i> New Task
+                   </button>
+                </div>
+            </header>
+
+            <div class="task-lists-container">
+                <div class="task-list-wrapper">
+                    <h3>Incomplete</h3>
+                    <div id="tasks-incomplete" class="task-list"></div>
+                </div>
+                <div class="task-list-wrapper">
+                    <h3>Completed</h3>
+                    <div id="tasks-completed" class="task-list"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calendar View -->
+        <section id="calendar-view" class="view-section">
+            <header class="view-header">
+                <h1>Calendar</h1>
+                <div class="action-bar">
+                   <button id="new-event-btn" class="primary-btn">
+                       <i class="fa-solid fa-plus"></i> New Event
+                   </button>
+                </div>
+            </header>
+            
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button id="prev-month" class="icon-btn"><i class="fa-solid fa-chevron-left"></i></button>
+                    <h2 id="calendar-month-year">Month Year</h2>
+                    <button id="next-month" class="icon-btn"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <!-- Weekdays Header -->
+                <div class="calendar-grid weekends-header">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                </div>
+                <!-- Calendar Days -->
+                <div id="calendar-days" class="calendar-grid"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals Overlay -->
+    <div class="modal-overlay" id="modal-overlay">
+        
+        <!-- Task Modal -->
+        <div class="modal" id="task-modal">
+            <div class="modal-header">
+                <h3 id="task-modal-title">Create Task</h3>
+                <button class="close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="task-form">
+                    <input type="hidden" id="task-id">
+                    <div class="form-group">
+                        <label>Task Title</label>
+                        <input type="text" id="task-title" placeholder="What do you need to do?" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category (Required)</label>
+                        <select id="task-category" required>
+                            <!-- Options injected by JS -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date (Optional)</label>
+                        <input type="date" id="task-date">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn close-modal">Cancel</button>
+                <button class="primary-btn" id="save-task-btn">Save Task</button>
+            </div>
+        </div>
+
+        <!-- Category Modal -->
+        <div class="modal" id="category-modal">
+            <div class="modal-header">
+                <h3 id="category-modal-title">Create Category</h3>
+                <button class="close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="category-form">
+                    <input type="hidden" id="category-id">
+                    <div class="form-group">
+                        <label>Category Name</label>
+                        <input type="text" id="category-name" placeholder="e.g. Work, Personal" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Color</label>
+                        <div class="color-picker" id="category-color-picker">
+                            <button type="button" class="color-option" data-color="var(--color-red)" style="background: var(--color-red)"></button>
+                            <button type="button" class="color-option" data-color="var(--color-orange)" style="background: var(--color-orange)"></button>
+                            <button type="button" class="color-option" data-color="var(--color-yellow)" style="background: var(--color-yellow)"></button>
+                            <button type="button" class="color-option" data-color="var(--color-green)" style="background: var(--color-green)"></button>
+                            <button type="button" class="color-option" data-color="var(--color-blue)" style="background: var(--color-blue)"></button>
+                            <button type="button" class="color-option" data-color="var(--color-purple)" style="background: var(--color-purple)"></button>
+                            <button type="button" class="color-option" data-color="var(--color-pink)" style="background: var(--color-pink)"></button>
+                        </div>
+                        <input type="hidden" id="category-color" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn close-modal">Cancel</button>
+                <button class="primary-btn" id="save-category-btn">Save Category</button>
+            </div>
+        </div>
+
+        <!-- Event Modal -->
+        <div class="modal" id="event-modal">
+            <div class="modal-header">
+                <h3 id="event-modal-title">Create Event</h3>
+                <button class="close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="event-form">
+                    <input type="hidden" id="event-id">
+                    <div class="form-group">
+                        <label>Event Title</label>
+                        <input type="text" id="event-title" placeholder="Event name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Date (Required)</label>
+                        <input type="date" id="event-date" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn close-modal">Cancel</button>
+                <button class="primary-btn" id="save-event-btn">Save Event</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>
