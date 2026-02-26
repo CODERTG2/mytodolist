@@ -314,14 +314,13 @@ window.editTask = function (id) {
     const task = state.tasks.find(t => t.id === id);
     if (!task) return;
 
-    document.getElementById('task-id').value = task.id;
-    document.getElementById('task-title').value = task.title;
-    populateCategorySelect();
-    document.getElementById('task-category').value = task.categoryId;
-    document.getElementById('task-date').value = task.date || '';
-
     document.getElementById('task-modal-title').textContent = "Edit Task";
     openModal(taskModal);
+
+    document.getElementById('task-id').value = task.id;
+    document.getElementById('task-title').value = task.title;
+    document.getElementById('task-category').value = task.categoryId;
+    document.getElementById('task-date').value = task.date || '';
 };
 
 window.deleteCategory = function (id) {
