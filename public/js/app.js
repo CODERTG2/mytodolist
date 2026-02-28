@@ -99,9 +99,9 @@ function openModal(modalEl) {
     modalOverlay.classList.add('active');
     modalEl.classList.add('active');
 
-    // Repopulate category select on task modal open
-    if (modalEl === taskModal) {
-        populateCategorySelect();
+    // Repopulate category select on task or event modal open
+    if (modalEl === taskModal || modalEl === eventModal) {
+        populateCategorySelect(modalEl === taskModal ? 'task-category' : 'event-category');
     }
 }
 
@@ -119,8 +119,8 @@ function closeAllModals() {
     document.getElementById('event-id').value = '';
 }
 
-function populateCategorySelect() {
-    const select = document.getElementById('task-category');
+function populateCategorySelect(selectId) {
+    const select = document.getElementById(selectId);
     select.innerHTML = '<option value="" disabled selected>Select a category</option>';
     state.categories.forEach(cat => {
         const option = document.createElement('option');
@@ -274,6 +274,8 @@ function saveEvent() {
     const id = document.getElementById('event-id').value;
     const title = document.getElementById('event-title').value.trim();
     const date = document.getElementById('event-date').value;
+    const time = document.getElementById('event-time').value;
+    const categoryId = document.getElementById('event-category').value;
 
     if (!title || !date) {
         alert("Title and Date are required.");
@@ -282,13 +284,19 @@ function saveEvent() {
 
     if (id) {
         const ev = state.events.find(e => e.id === id);
-        ev.title = title;
-        ev.date = date;
+        if (ev) {
+            ev.title = title;
+            ev.date = date;
+            ev.time = time;
+            ev.categoryId = categoryId;
+        }
     } else {
         state.events.push({
             id: generateId(),
             title,
-            date
+            date,
+            time,
+            categoryId
         });
     }
 
@@ -321,6 +329,20 @@ window.editTask = function (id) {
     document.getElementById('task-title').value = task.title;
     document.getElementById('task-category').value = task.categoryId;
     document.getElementById('task-date').value = task.date || '';
+};
+
+window.editEvent = function (id) {
+    const ev = state.events.find(e => e.id === id);
+    if (!ev) return;
+
+    document.getElementById('event-modal-title').textContent = "Edit Event";
+    openModal(eventModal);
+
+    document.getElementById('event-id').value = ev.id;
+    document.getElementById('event-title').value = ev.title;
+    document.getElementById('event-date').value = ev.date;
+    document.getElementById('event-time').value = ev.time || '';
+    document.getElementById('event-category').value = ev.categoryId || '';
 };
 
 window.deleteCategory = function (id) {
@@ -411,7 +433,8 @@ function renderCalendar() {
         dayTasks.forEach(task => {
             const cat = getCategory(task.categoryId);
             const color = cat ? cat.color : '#fff';
-            const html = `<div class="event-chip type-task" title="${task.title}">
+            const completedStyle = task.completed ? 'text-decoration: line-through; opacity: 0.6;' : '';
+            const html = `<div class="event-chip type-task" title="${task.title}" style="${completedStyle}">
                 <span class="dot" style="width:6px;height:6px;border-radius:50%;background:${color};"></span>
                 ${task.title}
             </div>`;
@@ -421,8 +444,11 @@ function renderCalendar() {
         // Find events for this date
         const dayEvents = state.events.filter(e => e.date === dateStr);
         dayEvents.forEach(ev => {
-            const html = `<div class="event-chip type-event" title="${ev.title}">
-                <i class="fa-solid fa-star" style="font-size:8px;"></i> ${ev.title}
+            const cat = getCategory(ev.categoryId);
+            const color = cat ? cat.color : '#fff';
+            const timeStr = ev.time ? ` <span style="font-size: 0.8em; opacity: 0.8;">(${ev.time})</span>` : '';
+            const html = `<div class="event-chip type-event" title="${ev.title}" onclick="editEvent('${ev.id}')" style="cursor: pointer;">
+                <i class="fa-solid fa-star" style="font-size:8px; color: ${color};"></i> ${ev.title}${timeStr}
             </div>`;
             eventsCont.insertAdjacentHTML('beforeend', html);
         });

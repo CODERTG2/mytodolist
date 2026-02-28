@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,18 +11,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body class="dark-theme">
-    
+
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="logo">
             <i class="fa-solid fa-layer-group"></i>
             <h2>ZenTask</h2>
         </div>
-        
+
         <nav class="nav-menu">
             <a href="#" class="nav-item active" data-view="tasks">
                 <i class="fa-solid fa-list-check"></i> Tasks
@@ -30,7 +32,7 @@
                 <i class="fa-regular fa-calendar"></i> Calendar
             </a>
         </nav>
-        
+
         <div class="categories-section">
             <div class="section-header">
                 <h3>Categories</h3>
@@ -50,9 +52,9 @@
                 <h1>My Tasks</h1>
                 <p class="date-subtitle" id="current-date-display"></p>
                 <div class="action-bar">
-                   <button id="new-task-btn" class="primary-btn">
-                       <i class="fa-solid fa-plus"></i> New Task
-                   </button>
+                    <button id="new-task-btn" class="primary-btn">
+                        <i class="fa-solid fa-plus"></i> New Task
+                    </button>
                 </div>
             </header>
 
@@ -73,12 +75,12 @@
             <header class="view-header">
                 <h1>Calendar</h1>
                 <div class="action-bar">
-                   <button id="new-event-btn" class="primary-btn">
-                       <i class="fa-solid fa-plus"></i> New Event
-                   </button>
+                    <button id="new-event-btn" class="primary-btn">
+                        <i class="fa-solid fa-plus"></i> New Event
+                    </button>
                 </div>
             </header>
-            
+
             <div class="calendar-container">
                 <div class="calendar-header">
                     <button id="prev-month" class="icon-btn"><i class="fa-solid fa-chevron-left"></i></button>
@@ -87,7 +89,13 @@
                 </div>
                 <!-- Weekdays Header -->
                 <div class="calendar-grid weekends-header">
-                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                    <div>Sun</div>
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
                 </div>
                 <!-- Calendar Days -->
                 <div id="calendar-days" class="calendar-grid"></div>
@@ -97,7 +105,7 @@
 
     <!-- Modals Overlay -->
     <div class="modal-overlay" id="modal-overlay">
-        
+
         <!-- Task Modal -->
         <div class="modal" id="task-modal">
             <div class="modal-header">
@@ -145,13 +153,20 @@
                     <div class="form-group">
                         <label>Color</label>
                         <div class="color-picker" id="category-color-picker">
-                            <button type="button" class="color-option" data-color="var(--color-red)" style="background: var(--color-red)"></button>
-                            <button type="button" class="color-option" data-color="var(--color-orange)" style="background: var(--color-orange)"></button>
-                            <button type="button" class="color-option" data-color="var(--color-yellow)" style="background: var(--color-yellow)"></button>
-                            <button type="button" class="color-option" data-color="var(--color-green)" style="background: var(--color-green)"></button>
-                            <button type="button" class="color-option" data-color="var(--color-blue)" style="background: var(--color-blue)"></button>
-                            <button type="button" class="color-option" data-color="var(--color-purple)" style="background: var(--color-purple)"></button>
-                            <button type="button" class="color-option" data-color="var(--color-pink)" style="background: var(--color-pink)"></button>
+                            <button type="button" class="color-option" data-color="var(--color-red)"
+                                style="background: var(--color-red)"></button>
+                            <button type="button" class="color-option" data-color="var(--color-orange)"
+                                style="background: var(--color-orange)"></button>
+                            <button type="button" class="color-option" data-color="var(--color-yellow)"
+                                style="background: var(--color-yellow)"></button>
+                            <button type="button" class="color-option" data-color="var(--color-green)"
+                                style="background: var(--color-green)"></button>
+                            <button type="button" class="color-option" data-color="var(--color-blue)"
+                                style="background: var(--color-blue)"></button>
+                            <button type="button" class="color-option" data-color="var(--color-purple)"
+                                style="background: var(--color-purple)"></button>
+                            <button type="button" class="color-option" data-color="var(--color-pink)"
+                                style="background: var(--color-pink)"></button>
                         </div>
                         <input type="hidden" id="category-color" required>
                     </div>
@@ -180,6 +195,15 @@
                         <label>Date (Required)</label>
                         <input type="date" id="event-date" required>
                     </div>
+                    <div class="form-group">
+                        <label>Time (Optional)</label>
+                        <input type="time" id="event-time">
+                        <div class="form-group">
+                            <label>Category (Optional)</label>
+                            <select id="event-category">
+                                <!-- Options injected by JS -->
+                            </select>
+                        </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -192,4 +216,5 @@
 
     <script src="/js/app.js"></script>
 </body>
+
 </html>
