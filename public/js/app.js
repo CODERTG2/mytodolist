@@ -5,6 +5,16 @@ let state = {
     events: []
 };
 
+// Filter/Sort State
+let filters = {
+    category: 'all',
+    dateFrom: '',
+    dateTo: '',
+    dayOfWeek: 'all',
+    sort: 'default',
+    calendarCategory: 'all'
+};
+
 // Elements
 const modalOverlay = document.getElementById('modal-overlay');
 const taskModal = document.getElementById('task-modal');
@@ -14,7 +24,7 @@ const eventModal = document.getElementById('event-modal');
 // API Functions
 const loadData = async () => {
     try {
-        const response = await fetch('http://localhost:3000/api/data');
+        const response = await fetch('/api/data');
         if (response.ok) {
             state = await response.json();
             renderAll();
@@ -26,7 +36,7 @@ const loadData = async () => {
 
 const saveData = async () => {
     try {
-        await fetch('http://localhost:3000/api/data', {
+        await fetch('/api/data', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(state)
@@ -92,6 +102,247 @@ function setupEventListeners() {
     // Calendar Navigation
     document.getElementById('prev-month').addEventListener('click', () => changeMonth(-1));
     document.getElementById('next-month').addEventListener('click', () => changeMonth(1));
+
+    // ===== Filter & Sort Listeners =====
+    document.getElementById('filter-category').addEventListener('change', (e) => {
+        filters.category = e.target.value;
+        renderTasks();
+        renderActiveFilters();
+    });
+
+    document.getElementById('filter-date-from').addEventListener('change', (e) => {
+        filters.dateFrom = e.target.value;
+        renderTasks();
+        renderActiveFilters();
+    });
+
+    document.getElementById('filter-date-to').addEventListener('change', (e) => {
+        filters.dateTo = e.target.value;
+        renderTasks();
+        renderActiveFilters();
+    });
+
+    document.getElementById('sort-tasks').addEventListener('change', (e) => {
+        filters.sort = e.target.value;
+        renderTasks();
+        renderActiveFilters();
+    });
+
+    // Day-of-week pills
+    document.querySelectorAll('.day-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            document.querySelectorAll('.day-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            filters.dayOfWeek = pill.getAttribute('data-day');
+            renderTasks();
+            renderActiveFilters();
+        });
+    });
+
+    // Clear filters
+    document.getElementById('clear-filters-btn').addEventListener('click', clearAllFilters);
+
+    // Calendar category filter
+    document.getElementById('calendar-filter-category').addEventListener('change', (e) => {
+        filters.calendarCategory = e.target.value;
+        renderCalendar();
+    });
+}
+
+// ===== Filter & Sort Logic =====
+
+function getFilteredAndSortedTasks(tasks) {
+    let filtered = [...tasks];
+
+    // Category filter
+    if (filters.category !== 'all') {
+        filtered = filtered.filter(t => t.categoryId === filters.category);
+    }
+
+    // Date range filter
+    if (filters.dateFrom) {
+        filtered = filtered.filter(t => {
+            if (!t.date) return false;
+            return t.date >= filters.dateFrom;
+        });
+    }
+
+    if (filters.dateTo) {
+        filtered = filtered.filter(t => {
+            if (!t.date) return false;
+            return t.date <= filters.dateTo;
+        });
+    }
+
+    // Day-of-week filter
+    if (filters.dayOfWeek !== 'all') {
+        const targetDay = parseInt(filters.dayOfWeek);
+        filtered = filtered.filter(t => {
+            if (!t.date) return false;
+            const d = new Date(t.date + 'T00:00:00');
+            return d.getDay() === targetDay;
+        });
+    }
+
+    // Sorting
+    switch (filters.sort) {
+        case 'alpha-asc':
+            filtered.sort((a, b) => a.title.localeCompare(b.title));
+            break;
+        case 'alpha-desc':
+            filtered.sort((a, b) => b.title.localeCompare(a.title));
+            break;
+        case 'date-asc':
+            filtered.sort((a, b) => {
+                if (!a.date && !b.date) return 0;
+                if (!a.date) return 1;
+                if (!b.date) return -1;
+                return a.date.localeCompare(b.date);
+            });
+            break;
+        case 'date-desc':
+            filtered.sort((a, b) => {
+                if (!a.date && !b.date) return 0;
+                if (!a.date) return 1;
+                if (!b.date) return -1;
+                return b.date.localeCompare(a.date);
+            });
+            break;
+        case 'category':
+            filtered.sort((a, b) => {
+                const catA = getCategory(a.categoryId);
+                const catB = getCategory(b.categoryId);
+                const nameA = catA ? catA.name : 'zzz';
+                const nameB = catB ? catB.name : 'zzz';
+                return nameA.localeCompare(nameB);
+            });
+            break;
+    }
+
+    return filtered;
+}
+
+function populateFilterCategorySelect() {
+    const select = document.getElementById('filter-category');
+    const calSelect = document.getElementById('calendar-filter-category');
+    const currentValue = select.value;
+    const currentCalValue = calSelect.value;
+
+    select.innerHTML = '<option value="all">All Categories</option>';
+    calSelect.innerHTML = '<option value="all">All Categories</option>';
+
+    state.categories.forEach(cat => {
+        const option1 = document.createElement('option');
+        option1.value = cat.id;
+        option1.textContent = cat.name;
+        select.appendChild(option1);
+
+        const option2 = document.createElement('option');
+        option2.value = cat.id;
+        option2.textContent = cat.name;
+        calSelect.appendChild(option2);
+    });
+
+    // Restore selected values
+    select.value = currentValue || 'all';
+    calSelect.value = currentCalValue || 'all';
+}
+
+function renderActiveFilters() {
+    const container = document.getElementById('active-filters');
+    container.innerHTML = '';
+
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    if (filters.category !== 'all') {
+        const cat = getCategory(filters.category);
+        if (cat) {
+            container.appendChild(createFilterTag(`Category: ${cat.name}`, () => {
+                filters.category = 'all';
+                document.getElementById('filter-category').value = 'all';
+                renderTasks();
+                renderActiveFilters();
+            }));
+        }
+    }
+
+    if (filters.dateFrom) {
+        container.appendChild(createFilterTag(`From: ${filters.dateFrom}`, () => {
+            filters.dateFrom = '';
+            document.getElementById('filter-date-from').value = '';
+            renderTasks();
+            renderActiveFilters();
+        }));
+    }
+
+    if (filters.dateTo) {
+        container.appendChild(createFilterTag(`To: ${filters.dateTo}`, () => {
+            filters.dateTo = '';
+            document.getElementById('filter-date-to').value = '';
+            renderTasks();
+            renderActiveFilters();
+        }));
+    }
+
+    if (filters.dayOfWeek !== 'all') {
+        container.appendChild(createFilterTag(`Day: ${dayNames[parseInt(filters.dayOfWeek)]}`, () => {
+            filters.dayOfWeek = 'all';
+            document.querySelectorAll('.day-pill').forEach(p => p.classList.remove('active'));
+            document.querySelector('.day-pill[data-day="all"]').classList.add('active');
+            renderTasks();
+            renderActiveFilters();
+        }));
+    }
+
+    if (filters.sort !== 'default') {
+        const sortLabels = {
+            'alpha-asc': 'A → Z',
+            'alpha-desc': 'Z → A',
+            'date-asc': 'Date ↑',
+            'date-desc': 'Date ↓',
+            'category': 'By Category'
+        };
+        container.appendChild(createFilterTag(`Sort: ${sortLabels[filters.sort]}`, () => {
+            filters.sort = 'default';
+            document.getElementById('sort-tasks').value = 'default';
+            renderTasks();
+            renderActiveFilters();
+        }));
+    }
+}
+
+function createFilterTag(label, onRemove) {
+    const tag = document.createElement('span');
+    tag.className = 'filter-tag';
+    tag.innerHTML = `${label} <i class="fa-solid fa-xmark remove-tag"></i>`;
+    tag.querySelector('.remove-tag').addEventListener('click', onRemove);
+    return tag;
+}
+
+function clearAllFilters() {
+    filters.category = 'all';
+    filters.dateFrom = '';
+    filters.dateTo = '';
+    filters.dayOfWeek = 'all';
+    filters.sort = 'default';
+
+    document.getElementById('filter-category').value = 'all';
+    document.getElementById('filter-date-from').value = '';
+    document.getElementById('filter-date-to').value = '';
+    document.getElementById('sort-tasks').value = 'default';
+
+    document.querySelectorAll('.day-pill').forEach(p => p.classList.remove('active'));
+    document.querySelector('.day-pill[data-day="all"]').classList.add('active');
+
+    renderTasks();
+    renderActiveFilters();
+}
+
+function hasActiveFilters() {
+    return filters.category !== 'all' ||
+        filters.dateFrom !== '' ||
+        filters.dateTo !== '' ||
+        filters.dayOfWeek !== 'all';
 }
 
 // Modal logic
@@ -137,9 +388,11 @@ function updateDateDisplay() {
 
 // Render logic
 function renderAll() {
+    populateFilterCategorySelect();
     renderCategories();
     renderTasks();
     renderCalendar();
+    renderActiveFilters();
 }
 
 function renderCategories() {
@@ -174,11 +427,39 @@ function renderTasks() {
     incompleteCont.innerHTML = '';
     completedCont.innerHTML = '';
 
-    const incTasks = state.tasks.filter(t => !t.completed);
-    const comTasks = state.tasks.filter(t => t.completed);
+    const allIncomplete = state.tasks.filter(t => !t.completed);
+    const allCompleted = state.tasks.filter(t => t.completed);
 
-    if (incTasks.length === 0) incompleteCont.innerHTML = `<div class="empty-state"><i class="fa-solid fa-mug-hot"></i><p>All caught up!</p></div>`;
-    if (comTasks.length === 0) completedCont.innerHTML = `<div class="empty-state" style="padding: 20px;"><p>No completed tasks.</p></div>`;
+    const incTasks = getFilteredAndSortedTasks(allIncomplete);
+    const comTasks = getFilteredAndSortedTasks(allCompleted);
+
+    // Update counts
+    const incCountEl = document.getElementById('incomplete-count');
+    const comCountEl = document.getElementById('completed-count');
+
+    if (hasActiveFilters() || filters.sort !== 'default') {
+        incCountEl.textContent = `(${incTasks.length} of ${allIncomplete.length})`;
+        comCountEl.textContent = `(${comTasks.length} of ${allCompleted.length})`;
+    } else {
+        incCountEl.textContent = incTasks.length > 0 ? `(${incTasks.length})` : '';
+        comCountEl.textContent = comTasks.length > 0 ? `(${comTasks.length})` : '';
+    }
+
+    if (incTasks.length === 0) {
+        if (hasActiveFilters() && allIncomplete.length > 0) {
+            incompleteCont.innerHTML = `<div class="no-results"><i class="fa-solid fa-filter-circle-xmark"></i><p>No tasks match your filters</p><p class="sub">Try adjusting or clearing filters</p></div>`;
+        } else {
+            incompleteCont.innerHTML = `<div class="empty-state"><i class="fa-solid fa-mug-hot"></i><p>All caught up!</p></div>`;
+        }
+    }
+
+    if (comTasks.length === 0) {
+        if (hasActiveFilters() && allCompleted.length > 0) {
+            completedCont.innerHTML = `<div class="no-results"><i class="fa-solid fa-filter-circle-xmark"></i><p>No completed tasks match filters</p></div>`;
+        } else {
+            completedCont.innerHTML = `<div class="empty-state" style="padding: 20px;"><p>No completed tasks.</p></div>`;
+        }
+    }
 
     incTasks.forEach(task => incompleteCont.appendChild(createTaskElement(task)));
     comTasks.forEach(task => completedCont.appendChild(createTaskElement(task)));
@@ -192,6 +473,15 @@ function createTaskElement(task) {
     const div = document.createElement('div');
     div.className = `task-card ${task.completed ? 'completed' : ''}`;
 
+    // Format date nicely
+    let dateDisplay = '';
+    if (task.date) {
+        const d = new Date(task.date + 'T00:00:00');
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        dateDisplay = `${dayNames[d.getDay()]}, ${monthNames[d.getMonth()]} ${d.getDate()}`;
+    }
+
     div.innerHTML = `
         <div class="task-left">
             <div class="checkbox" onclick="toggleTask('${task.id}')">
@@ -204,7 +494,7 @@ function createTaskElement(task) {
                         <span class="dot" style="--dot-color: ${catColor}"></span>
                         ${catName}
                     </span>
-                    ${task.date ? `<span><i class="fa-regular fa-calendar" style="margin-right:4px;"></i>${task.date}</span>` : ''}
+                    ${dateDisplay ? `<span><i class="fa-regular fa-calendar" style="margin-right:4px;"></i>${dateDisplay}</span>` : ''}
                 </div>
             </div>
         </div>
@@ -414,6 +704,7 @@ function renderCalendar() {
     }
 
     const todayStr = new Date().toISOString().split('T')[0];
+    const calCatFilter = filters.calendarCategory;
 
     for (let i = 1; i <= daysInMonth; i++) {
         const div = document.createElement('div');
@@ -428,8 +719,11 @@ function renderCalendar() {
         const eventsCont = document.createElement('div');
         eventsCont.className = 'day-events';
 
-        // Find tasks for this date
-        const dayTasks = state.tasks.filter(t => t.date === dateStr);
+        // Find tasks for this date (with calendar category filter)
+        let dayTasks = state.tasks.filter(t => t.date === dateStr);
+        if (calCatFilter !== 'all') {
+            dayTasks = dayTasks.filter(t => t.categoryId === calCatFilter);
+        }
         dayTasks.forEach(task => {
             const cat = getCategory(task.categoryId);
             const color = cat ? cat.color : '#fff';
@@ -441,8 +735,11 @@ function renderCalendar() {
             eventsCont.insertAdjacentHTML('beforeend', html);
         });
 
-        // Find events for this date
-        const dayEvents = state.events.filter(e => e.date === dateStr);
+        // Find events for this date (with calendar category filter)
+        let dayEvents = state.events.filter(e => e.date === dateStr);
+        if (calCatFilter !== 'all') {
+            dayEvents = dayEvents.filter(e => e.categoryId === calCatFilter);
+        }
         dayEvents.forEach(ev => {
             const cat = getCategory(ev.categoryId);
             const color = cat ? cat.color : '#fff';

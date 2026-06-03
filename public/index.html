@@ -49,8 +49,10 @@
         <!-- Tasks View -->
         <section id="tasks-view" class="view-section active">
             <header class="view-header">
-                <h1>My Tasks</h1>
-                <p class="date-subtitle" id="current-date-display"></p>
+                <div>
+                    <h1>My Tasks</h1>
+                    <p class="date-subtitle" id="current-date-display"></p>
+                </div>
                 <div class="action-bar">
                     <button id="new-task-btn" class="primary-btn">
                         <i class="fa-solid fa-plus"></i> New Task
@@ -58,13 +60,65 @@
                 </div>
             </header>
 
+            <!-- Filter & Sort Toolbar -->
+            <div class="filter-sort-bar" id="task-filter-bar">
+                <div class="filter-group">
+                    <div class="filter-item">
+                        <label class="filter-label"><i class="fa-solid fa-tag"></i> Category</label>
+                        <select id="filter-category" class="filter-select">
+                            <option value="all">All Categories</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="filter-label"><i class="fa-regular fa-calendar"></i> From</label>
+                        <input type="date" id="filter-date-from" class="filter-input">
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="filter-label"><i class="fa-regular fa-calendar-check"></i> To</label>
+                        <input type="date" id="filter-date-to" class="filter-input">
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="filter-label"><i class="fa-solid fa-arrow-down-wide-short"></i> Sort</label>
+                        <select id="sort-tasks" class="filter-select">
+                            <option value="default">Default Order</option>
+                            <option value="alpha-asc">A → Z</option>
+                            <option value="alpha-desc">Z → A</option>
+                            <option value="date-asc">Date ↑ (Earliest)</option>
+                            <option value="date-desc">Date ↓ (Latest)</option>
+                            <option value="category">By Category</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="filter-row-bottom">
+                    <div class="day-pills" id="day-pills">
+                        <button class="day-pill active" data-day="all">All Days</button>
+                        <button class="day-pill" data-day="0">Sun</button>
+                        <button class="day-pill" data-day="1">Mon</button>
+                        <button class="day-pill" data-day="2">Tue</button>
+                        <button class="day-pill" data-day="3">Wed</button>
+                        <button class="day-pill" data-day="4">Thu</button>
+                        <button class="day-pill" data-day="5">Fri</button>
+                        <button class="day-pill" data-day="6">Sat</button>
+                    </div>
+                    <button id="clear-filters-btn" class="clear-filters-btn" title="Clear all filters">
+                        <i class="fa-solid fa-filter-circle-xmark"></i> Clear
+                    </button>
+                </div>
+            </div>
+
+            <div class="active-filters" id="active-filters"></div>
+
             <div class="task-lists-container">
                 <div class="task-list-wrapper">
-                    <h3>Incomplete</h3>
+                    <h3>Incomplete <span class="task-count" id="incomplete-count"></span></h3>
                     <div id="tasks-incomplete" class="task-list"></div>
                 </div>
                 <div class="task-list-wrapper">
-                    <h3>Completed</h3>
+                    <h3>Completed <span class="task-count" id="completed-count"></span></h3>
                     <div id="tasks-completed" class="task-list"></div>
                 </div>
             </div>
@@ -75,6 +129,11 @@
             <header class="view-header">
                 <h1>Calendar</h1>
                 <div class="action-bar">
+                    <div class="filter-item calendar-filter">
+                        <select id="calendar-filter-category" class="filter-select">
+                            <option value="all">All Categories</option>
+                        </select>
+                    </div>
                     <button id="new-event-btn" class="primary-btn">
                         <i class="fa-solid fa-plus"></i> New Event
                     </button>
