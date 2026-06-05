@@ -1,0 +1,39 @@
+/* Responsive */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 16px;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .categories-section {
+        display: none;
+    }
+
+    .main-content {
+        padding: 24px;
+    }
+
+    .calendar-day {
+        min-height: 80px;
+    }
+
+    .filter-group {
+        flex-direction: column;
+    }
+
+    .day-pills {
+        flex-wrap: wrap;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+}

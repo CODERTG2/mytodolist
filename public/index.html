@@ -12,7 +12,14 @@
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <link rel="stylesheet" href="/css/style.css">
+    <!-- Modular CSS -->
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <link rel="stylesheet" href="/css/tasks.css">
+    <link rel="stylesheet" href="/css/calendar.css">
+    <link rel="stylesheet" href="/css/modals.css">
+    <link rel="stylesheet" href="/css/filters.css">
+    <link rel="stylesheet" href="/css/responsive.css">
 </head>
 
 <body class="dark-theme">
@@ -254,15 +261,41 @@
                         <label>Date (Required)</label>
                         <input type="date" id="event-date" required>
                     </div>
-                    <div class="form-group">
-                        <label>Time (Optional)</label>
-                        <input type="time" id="event-time">
+                    <div class="form-row">
                         <div class="form-group">
-                            <label>Category (Optional)</label>
-                            <select id="event-category">
-                                <!-- Options injected by JS -->
-                            </select>
+                            <label>Start Time</label>
+                            <input type="time" id="event-time">
                         </div>
+                        <div class="form-group">
+                            <label>End Time</label>
+                            <input type="time" id="event-end-time">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Category (Optional)</label>
+                        <select id="event-category">
+                            <!-- Options injected by JS -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Repeat</label>
+                        <select id="event-recurrence">
+                            <option value="none">None</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="biweekly">Biweekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+                    <div class="form-group recurrence-end-group" id="recurrence-end-group">
+                        <label>Repeat Until (Optional)</label>
+                        <input type="date" id="event-recurrence-end">
+                    </div>
+                    <div class="form-group">
+                        <label>Description / Details</label>
+                        <textarea id="event-description" placeholder="Add notes or details about this event..." rows="3"></textarea>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -273,7 +306,7 @@
 
     </div>
 
-    <script src="/js/app.js"></script>
+    <script type="module" src="/js/app.js"></script>
 </body>
 
 </html>
